@@ -1,13 +1,17 @@
 package com.example.social_reel.config;
 
 
+import com.example.social_reel.filters.InternalFilter;
 import com.example.social_reel.filters.JwtAuthenticationFilter;
+import com.example.social_reel.util.JwtUtil;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -18,9 +22,20 @@ import java.util.List;
 @EnableMethodSecurity
 public class SecurityConfig {
 
+
+    @Bean
+    public JwtAuthenticationFilter jwtAuthenticationFilter(JwtUtil jwtUtil){
+        return new JwtAuthenticationFilter(jwtUtil);
+    }
+
+    @Bean
+    public InternalFilter internalFilter(@Value("${service.secret}") String secret){
+        return new InternalFilter(secret);
+    }
+
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http,
-                                                   JwtAuthenticationFilter jwtFilter) throws Exception {
+                                                   JwtAuthenticationFilter jwtFilter ,InternalFilter internalFilter) throws Exception {
         http
                 .csrf(csrf -> csrf.disable())
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
@@ -29,6 +44,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/health").permitAll()
                         .anyRequest().authenticated()
                 )
+                .addFilterBefore(internalFilter, UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(jwtFilter, org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter.class);
 
         return http.build();

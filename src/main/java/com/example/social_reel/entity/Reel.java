@@ -20,12 +20,14 @@ public class Reel {
 
     private String userId;
 
+    private String username;
+
+    private String avatar;
+
     private String videoUrl;
 
-    // what user typed
     private List<String> rawTags;
 
-    // semantic meaning buckets
     private Set<String> semanticTags;
 
     private Instant createdAt;

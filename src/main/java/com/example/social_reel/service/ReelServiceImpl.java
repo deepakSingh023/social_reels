@@ -1,5 +1,6 @@
 package com.example.social_reel.service;
 
+import com.example.social_reel.dto.ReelCreation;
 import com.example.social_reel.entity.Reel;
 import com.example.social_reel.repository.ReelRepository;
 import com.example.social_reel.util.VideoCompressor;
@@ -29,13 +30,13 @@ public class ReelServiceImpl implements ReelService {
     private String bucket;
 
     @Value("${cloudflare.r2.public-base-url}")
-    private String publicBaseUrl; // e.g. https://bucket.accountid.r2.dev
+    private String publicBaseUrl;
 
     @Override
     public Reel createReel(
             String userId,
             MultipartFile video,
-            List<String> rawTags
+            ReelCreation data
     ) throws Exception {
 
         validateVideo(video);
@@ -59,9 +60,11 @@ public class ReelServiceImpl implements ReelService {
 
         Reel reel = new Reel();
         reel.setUserId(userId);
-        reel.setVideoUrl(publicVideoUrl); // ✅ PUBLIC URL
-        reel.setRawTags(rawTags);
-        reel.setSemanticTags(tagResolver.resolve(rawTags));
+        reel.setVideoUrl(publicVideoUrl);
+        reel.setRawTags(data.tags());
+        reel.setUsername(data.username());
+        reel.setAvatar(data.avatar());
+        reel.setSemanticTags(tagResolver.resolve(data.tags()));
         reel.setCreatedAt(Instant.now());
 
         return reelRepository.save(reel);
