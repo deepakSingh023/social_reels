@@ -13,14 +13,14 @@ import org.springframework.stereotype.Component;
 import java.io.IOException;
 
 @Aspect
-@Order(1)
+@Order(2)
 @Component
 @RequiredArgsConstructor
 public class MetricAspect {
 
     private final MeterRegistry meterRegistry;
 
-    @Around("execution(* ..com.example.social_reel.controller..*(..))")
+    @Around("execution(* com.example.social_reel.controller..*(..))")
     public Object getMetric(ProceedingJoinPoint jp)throws Throwable, IOException{
 
         String method = jp.getSignature().getName();

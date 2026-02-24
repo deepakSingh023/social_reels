@@ -16,7 +16,7 @@ import java.util.UUID;
 @Component
 public class TraceAspect {
 
-    @Around("execution(* ..com.example.social_reel.controller..*(..))")
+    @Around("execution(* com.example.social_reel.controller..*(..))")
     public Object getTracing(ProceedingJoinPoint jp) throws IOException,Throwable{
 
         String traceId = UUID.randomUUID().toString();

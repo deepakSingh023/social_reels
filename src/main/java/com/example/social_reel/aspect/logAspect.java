@@ -12,14 +12,14 @@ import org.springframework.stereotype.Component;
 import java.io.IOException;
 
 @Aspect
-@Order(1)
+@Order(3)
 @Component
 public class logAspect {
 
     public static final Logger log  = LoggerFactory.getLogger(logAspect.class);
 
 
-    @Around("execution(* ..com.example.social_reel.controller..*(..))")
+    @Around("execution(* com.example.social_reel.controller..*(..))")
     public Object getLogging(ProceedingJoinPoint jp) throws IOException,Throwable{
 
         long start = System.currentTimeMillis();
