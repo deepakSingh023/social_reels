@@ -33,7 +33,7 @@ public class InternalFilter extends OncePerRequestFilter {
             FilterChain filterChain
     )throws IOException, ServletException{
 
-        String secret = request.getHeader("X-AUTH-SECRET");
+        String secret = request.getHeader("X-SECRET-TOKEN");
 
         if(secret == null || !secret.equals(localSecret)){
             response.setStatus(HttpServletResponse.SC_FORBIDDEN);
