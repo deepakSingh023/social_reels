@@ -1,5 +1,6 @@
 package com.example.social_reel.health;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
@@ -7,7 +8,8 @@ import org.springframework.web.client.RestTemplate;
 @Component
 public class KeepAliveTask {
 
-    private static final String PING_URL = "https://social-reels-dwt4.onrender.com/api/health";
+    @Value("${health.api}")
+    private String PING_URL;
 
     private final RestTemplate restTemplate = new RestTemplate();
 
