@@ -30,5 +30,9 @@ public class Reel {
 
     private Set<String> semanticTags;
 
+    private long viewCount;
+
+    private double popularityScore;
+
     private Instant createdAt;
 }

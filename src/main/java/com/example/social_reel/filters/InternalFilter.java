@@ -21,8 +21,7 @@ public class InternalFilter extends OncePerRequestFilter {
 
         String uri = request.getRequestURI();
 
-        return ! (uri.startsWith("/api/denormalize/")
-                || uri.startsWith("/api/post/"));
+        return !uri.startsWith("/api/reel/");
 
     }
 
