@@ -1,6 +1,7 @@
 package com.example.social_reel.service;
 
 
+import com.example.social_reel.dto.IncrementDecDto;
 import com.example.social_reel.entity.Reel;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.mongodb.core.MongoTemplate;
@@ -20,49 +21,16 @@ public class IncAndDecService {
 
 
 
-    public void incrementLike(String postId){
+    public void incrementLike(IncrementDecDto data){
         Query query = new Query();
-        query.addCriteria(Criteria.where("_id").is(postId));
+        query.addCriteria(Criteria.where("_id").is(data.postId()));
 
         Update update = new Update();
-        update.inc("likes",1);
+        update.inc(data.type().getField(),data.num());
 
         mongoTemplate.updateFirst(query,update, Reel.class);
 
     }
 
-
-    public void incrementComment(String postId){
-        Query query = new Query();
-        query.addCriteria(Criteria.where("_id").is(postId));
-
-        Update update = new Update();
-        update.inc("comments",1);
-
-        mongoTemplate.updateFirst(query,update, Reel.class);
-
-    }
-
-    public void decrementLike(String postId){
-        Query query = new Query();
-        query.addCriteria(Criteria.where("_id").is(postId));
-
-        Update update = new Update();
-        update.inc("likes",-1);
-
-        mongoTemplate.updateFirst(query,update, Reel.class);
-
-    }
-
-    public void decrementComment(String postId){
-        Query query = new Query();
-        query.addCriteria(Criteria.where("_id").is(postId));
-
-        Update update = new Update();
-        update.inc("comments",-1);
-
-        mongoTemplate.updateFirst(query,update, Reel.class);
-
-    }
 
 }

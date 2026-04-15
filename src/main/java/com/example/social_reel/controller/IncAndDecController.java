@@ -1,13 +1,11 @@
 package com.example.social_reel.controller;
 
 
+import com.example.social_reel.dto.IncrementDecDto;
 import com.example.social_reel.service.IncAndDecService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RequiredArgsConstructor
 @RestController
@@ -19,52 +17,14 @@ public class IncAndDecController {
 
     @PutMapping("/like/inc/{reelId}")
     public ResponseEntity<Void> likeInc(
-            @PathVariable String reelId
-    ){
+            @RequestBody IncrementDecDto data
+            ){
 
-        incAndDecService.incrementLike(reelId);
-
-        return ResponseEntity.accepted().build();
-
-
-    }
-
-
-    @PutMapping("/like/dec/{reelId}")
-    public ResponseEntity<Void> likeDec(
-            @PathVariable String reelId
-    ){
-
-        incAndDecService.decrementLike(reelId);
+        incAndDecService.incrementLike(data);
 
         return ResponseEntity.accepted().build();
 
 
     }
 
-
-    @PutMapping("/comment/inc/{reelId}")
-    public ResponseEntity<Void> commentInc(
-            @PathVariable String reelId
-    ){
-
-        incAndDecService.incrementComment(reelId);
-
-        return ResponseEntity.accepted().build();
-
-
-    }
-
-
-    @PutMapping("/comment/dec/{reelId}")
-    public ResponseEntity<Void> commentDec(
-            @PathVariable String reelId
-    ){
-
-        incAndDecService.decrementComment(reelId);
-
-        return ResponseEntity.accepted().build();
-
-
-    }
 }

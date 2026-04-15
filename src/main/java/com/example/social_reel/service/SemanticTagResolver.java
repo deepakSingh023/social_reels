@@ -1,5 +1,6 @@
 package com.example.social_reel.service;
 
+import com.example.social_reel.entity.TagMapping;
 import com.example.social_reel.repository.TagMappingRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -21,9 +22,25 @@ public class SemanticTagResolver {
         for (String raw : rawTags) {
             String normalized = raw.toLowerCase().trim();
 
-            repository.findByRawTag(normalized)
-                    .ifPresent(mapping ->
-                            semanticTags.add(mapping.getSemanticTag()));
+            var mappingOpt = repository.findByRawTag(normalized);
+
+            if (mappingOpt.isPresent()) {
+                var mapping = mappingOpt.get();
+
+                // Only add if semantic exists
+                if (mapping.getSemanticTag() != null) {
+                    semanticTags.add(mapping.getSemanticTag());
+                }
+
+            } else {
+                // 🔥 Create new tag with null semantic
+                repository.save(
+                        TagMapping.builder()
+                                .rawTag(normalized)
+                                .semanticTag(null)
+                                .build()
+                );
+            }
         }
 
         return semanticTags;

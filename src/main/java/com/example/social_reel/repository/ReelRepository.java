@@ -31,5 +31,10 @@ public interface ReelRepository extends MongoRepository<Reel, String> {
             Pageable pageable
     );
 
+    List<Reel> findByUserIdOrderByCreatedAtDesc(String userId, Pageable pageable);
+
+    List<Reel> findByUserIdAndCreatedAtLessThanOrderByCreatedAtDesc(String userId, Instant cursorCreatedAt,
+                                                                    Pageable pageable);
+
 
 }

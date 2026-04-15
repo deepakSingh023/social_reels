@@ -34,5 +34,9 @@ public class Reel {
 
     private double popularityScore;
 
+    private long likes = 0;
+
+    private long comments = 0;
+
     private Instant createdAt;
 }

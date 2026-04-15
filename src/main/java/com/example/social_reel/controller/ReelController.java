@@ -1,5 +1,7 @@
 package com.example.social_reel.controller;
 
+import com.example.social_reel.dto.IndividualResponse;
+import com.example.social_reel.dto.PersonalReels;
 import com.example.social_reel.dto.ReelCreation;
 import com.example.social_reel.entity.Reel;
 import com.example.social_reel.service.ReelService;
@@ -40,12 +42,30 @@ public class ReelController {
         return ResponseEntity.noContent().build();
     }
 
-    @GetMapping("/me")
-    public ResponseEntity<List<Reel>> myReels(
+    @GetMapping("/users/{postOwnerId}/reels")
+    public ResponseEntity<PersonalReels> myReels(
+            @PathVariable String postOwnerId,
+            @RequestParam(required = false) String cursor,
             Authentication authentication
     ) {
+
+        String userId= authentication.getName();
         return ResponseEntity.ok(
-                reelService.getMyReels(authentication.getName())
+                reelService.getMyReels(userId,postOwnerId,cursor)
         );
+    }
+
+
+    @GetMapping("/users/reels/{reelId}")
+    public ResponseEntity<IndividualResponse> getIndividualReel(
+            @PathVariable String reelId,
+            Authentication authentication
+    ){
+        String userId = authentication.getName();
+
+        IndividualResponse res = reelService.getReel(userId,reelId);
+
+        return ResponseEntity.ok(res);
+
     }
 }

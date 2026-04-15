@@ -1,11 +1,17 @@
 package com.example.social_reel.service;
 
+import com.example.social_reel.dto.IndividualResponse;
+import com.example.social_reel.dto.PersonalReels;
+import com.example.social_reel.dto.PersonalReelsResponse;
 import com.example.social_reel.dto.ReelCreation;
 import com.example.social_reel.entity.Reel;
+import com.example.social_reel.exceptions.ReelNotFound;
 import com.example.social_reel.repository.ReelRepository;
+import com.example.social_reel.util.LikeClient;
 import com.example.social_reel.util.VideoCompressor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import software.amazon.awssdk.core.sync.RequestBody;
@@ -15,7 +21,9 @@ import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 
 import java.io.File;
 import java.time.Instant;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @Service
@@ -26,11 +34,16 @@ public class ReelServiceImpl implements ReelService {
     private final ReelRepository reelRepository;
     private final SemanticTagResolver tagResolver;
 
+    private final LikeClient likeClient;
+
     @Value("${cloudflare.r2.bucket}")
     private String bucket;
 
     @Value("${cloudflare.r2.public-base-url}")
     private String publicBaseUrl;
+
+    @Value("${service.secret}")
+    private final String token;
 
     @Override
     public Reel createReel(
@@ -65,8 +78,9 @@ public class ReelServiceImpl implements ReelService {
         reel.setUsername(data.username());
         reel.setAvatar(data.avatar());
         reel.setSemanticTags(tagResolver.resolve(data.tags()));
+        reel.setLikes(0);
+        reel.setComments(0);
         reel.setCreatedAt(Instant.now());
-
         return reelRepository.save(reel);
     }
 
@@ -94,8 +108,85 @@ public class ReelServiceImpl implements ReelService {
     }
 
     @Override
-    public List<Reel> getMyReels(String userId) {
-        return reelRepository.findByUserId(userId);
+    public PersonalReels getMyReels(String userId, String ownerId , String cursor) {
+
+        List<Reel> reels;
+
+
+
+        if(cursor==null || cursor.isEmpty()){
+            reels = reelRepository.findByUserIdOrderByCreatedAtDesc(ownerId, Pageable.ofSize(10));
+        }else{
+            Instant instantCursor = Instant.parse(cursor);
+
+            reels = reelRepository.findByUserIdAndCreatedAtLessThanOrderByCreatedAtDesc(userId,instantCursor,Pageable.ofSize(10));
+        }
+
+        boolean isOwner = userId != null && userId.equals(ownerId);
+
+        Instant newCursor = reels.get(reels.size()-1).getCreatedAt();
+
+
+        List<String> reelIds = reels.stream()
+                .map(Reel::getId)
+                .toList();
+
+
+        Map<String, Boolean> likedMap;
+
+        if (userId != null && !reelIds.isEmpty()) {
+            likedMap = likeClient.getLikedStatus(token , userId, reelIds);
+        } else {
+            likedMap = Collections.emptyMap();
+        }
+
+
+        List<PersonalReelsResponse> res = reels.stream()
+                .map(reel->new PersonalReelsResponse(
+                        reel.getId(),
+                        reel.getUsername(),
+                        reel.getAvatar(),
+                        reel.getVideoUrl(),
+                        reel.getRawTags(),
+                        reel.getSemanticTags(),
+                        reel.getViewCount(),
+                        reel.getComments(),
+                        reel.getLikes(),
+                        reel.getCreatedAt(),
+                        likedMap.getOrDefault(reel.getId(),false)
+
+                )).toList();
+
+
+        return new PersonalReels(res,newCursor,isOwner);
+
+    }
+
+    @Override
+    public IndividualResponse getReel(String userId, String postId){
+
+        Reel reel = reelRepository.findById(postId)
+                .orElseThrow(()->new ReelNotFound("this reel does not exit"));
+
+
+        PersonalReelsResponse res = new PersonalReelsResponse(
+                reel.getId(),
+                reel.getUsername(),
+                reel.getAvatar(),
+                reel.getVideoUrl(),
+                reel.getRawTags(),
+                reel.getSemanticTags(),
+                reel.getViewCount(),
+                reel.getComments(),
+                reel.getLikes(),
+                reel.getCreatedAt(),
+                likeClient.getIndividualLiked(token,userId,postId)
+        );
+
+        boolean isOwner = userId !=null && userId.equals(reel.getUserId());
+
+        return new IndividualResponse(res,isOwner);
+
     }
 
     private void validateVideo(MultipartFile video) {
