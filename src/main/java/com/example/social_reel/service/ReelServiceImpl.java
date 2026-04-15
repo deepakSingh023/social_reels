@@ -1,13 +1,11 @@
 package com.example.social_reel.service;
 
-import com.example.social_reel.dto.IndividualResponse;
-import com.example.social_reel.dto.PersonalReels;
-import com.example.social_reel.dto.PersonalReelsResponse;
-import com.example.social_reel.dto.ReelCreation;
+import com.example.social_reel.dto.*;
 import com.example.social_reel.entity.Reel;
 import com.example.social_reel.exceptions.ReelNotFound;
 import com.example.social_reel.repository.ReelRepository;
 import com.example.social_reel.util.LikeClient;
+import com.example.social_reel.util.ProfileClient;
 import com.example.social_reel.util.VideoCompressor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -33,6 +31,8 @@ public class ReelServiceImpl implements ReelService {
     private final S3Client s3Client;
     private final ReelRepository reelRepository;
     private final SemanticTagResolver tagResolver;
+
+    private final ProfileClient profileClient;
 
     private final LikeClient likeClient;
 
@@ -71,12 +71,14 @@ public class ReelServiceImpl implements ReelService {
 
         String publicVideoUrl = publicBaseUrl + "/" + videoKey;
 
+        InternalProfile profile = profileClient.getInternalData(userId);
+
         Reel reel = new Reel();
         reel.setUserId(userId);
         reel.setVideoUrl(publicVideoUrl);
         reel.setRawTags(data.tags());
-        reel.setUsername(data.username());
-        reel.setAvatar(data.avatar());
+        reel.setUsername(profile.username());
+        reel.setAvatar(profile.avatar());
         reel.setSemanticTags(tagResolver.resolve(data.tags()));
         reel.setLikes(0);
         reel.setComments(0);
