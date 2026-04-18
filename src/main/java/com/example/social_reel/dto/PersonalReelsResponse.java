@@ -11,6 +11,7 @@ public record PersonalReelsResponse(
         String videoUrl,
         List<String> rawTags,
         Set<String> semanticTags,
+        String caption,
         long viewCount,
         long likes,
         long comments,

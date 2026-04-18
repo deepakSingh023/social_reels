@@ -43,13 +43,14 @@ public class ReelServiceImpl implements ReelService {
     private String publicBaseUrl;
 
     @Value("${service.secret}")
-    private final String token;
+    private String token;
 
     @Override
     public Reel createReel(
             String userId,
             MultipartFile video,
-            ReelCreation data
+            List<String> data,
+            String caption
     ) throws Exception {
 
         validateVideo(video);
@@ -71,18 +72,24 @@ public class ReelServiceImpl implements ReelService {
 
         String publicVideoUrl = publicBaseUrl + "/" + videoKey;
 
-        InternalProfile profile = profileClient.getInternalData(userId);
+
+        InternalProfile profile = profileClient.getInternalData(token,userId);
 
         Reel reel = new Reel();
         reel.setUserId(userId);
         reel.setVideoUrl(publicVideoUrl);
-        reel.setRawTags(data.tags());
+        reel.setRawTags(data);
+        reel.setCaption(caption);
         reel.setUsername(profile.username());
         reel.setAvatar(profile.avatar());
-        reel.setSemanticTags(tagResolver.resolve(data.tags()));
+        reel.setSemanticTags(tagResolver.resolve(data));
         reel.setLikes(0);
         reel.setComments(0);
         reel.setCreatedAt(Instant.now());
+
+
+        profileClient.updateReelCounter(token,new ReelUpdate(userId,+1));
+
         return reelRepository.save(reel);
     }
 
@@ -106,6 +113,8 @@ public class ReelServiceImpl implements ReelService {
                         .build()
         );
 
+        profileClient.updateReelCounter(token,new ReelUpdate(userId,-1));
+
         reelRepository.delete(reel);
     }
 
@@ -126,7 +135,11 @@ public class ReelServiceImpl implements ReelService {
 
         boolean isOwner = userId != null && userId.equals(ownerId);
 
-        Instant newCursor = reels.get(reels.size()-1).getCreatedAt();
+        Instant newCursor = null;
+
+        if (!reels.isEmpty()) {
+            newCursor = reels.get(reels.size() - 1).getCreatedAt();
+        }
 
 
         List<String> reelIds = reels.stream()
@@ -151,6 +164,7 @@ public class ReelServiceImpl implements ReelService {
                         reel.getVideoUrl(),
                         reel.getRawTags(),
                         reel.getSemanticTags(),
+                        reel.getCaption(),
                         reel.getViewCount(),
                         reel.getComments(),
                         reel.getLikes(),
@@ -178,6 +192,7 @@ public class ReelServiceImpl implements ReelService {
                 reel.getVideoUrl(),
                 reel.getRawTags(),
                 reel.getSemanticTags(),
+                reel.getCaption(),
                 reel.getViewCount(),
                 reel.getComments(),
                 reel.getLikes(),

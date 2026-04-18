@@ -1,6 +1,6 @@
 package com.example.social_reel.config;
 
-
+import org.springframework.web.cors.CorsConfigurationSource;
 import com.example.social_reel.filters.InternalFilter;
 import com.example.social_reel.filters.JwtAuthenticationFilter;
 import com.example.social_reel.util.JwtUtil;
@@ -13,7 +13,6 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
-import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.util.List;

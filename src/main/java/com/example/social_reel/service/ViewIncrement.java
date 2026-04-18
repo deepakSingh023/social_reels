@@ -18,7 +18,7 @@ public class ViewIncrement {
 
     public Reel incrementView(String reelId){
 
-        Query query = Query.query(Criteria.where("id").is(reelId));
+        Query query = Query.query(Criteria.where("_id").is(reelId));
 
         Update update = new Update().inc("viewCount",1);
 

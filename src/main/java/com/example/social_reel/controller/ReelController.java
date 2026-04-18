@@ -2,7 +2,6 @@ package com.example.social_reel.controller;
 
 import com.example.social_reel.dto.IndividualResponse;
 import com.example.social_reel.dto.PersonalReels;
-import com.example.social_reel.dto.ReelCreation;
 import com.example.social_reel.entity.Reel;
 import com.example.social_reel.service.ReelService;
 import lombok.RequiredArgsConstructor;
@@ -20,16 +19,17 @@ public class ReelController {
 
     private final ReelService reelService;
 
-    @PostMapping(consumes = "multipart/form-data")
+    @PostMapping(value = "/create",consumes = "multipart/form-data")
     public ResponseEntity<Reel> createReel(
             @RequestPart("video") MultipartFile video,
-            @RequestPart("reelCreation")ReelCreation data,
+            @RequestPart("tags") List<String> tags,
+            @RequestPart("caption") String caption,
             Authentication authentication
     ) throws Exception {
 
         String userId = authentication.getName();
         return ResponseEntity.ok(
-                reelService.createReel(userId, video, data)
+                reelService.createReel(userId, video, tags, caption)
         );
     }
 

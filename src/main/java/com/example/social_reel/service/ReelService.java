@@ -2,7 +2,6 @@ package com.example.social_reel.service;
 
 import com.example.social_reel.dto.IndividualResponse;
 import com.example.social_reel.dto.PersonalReels;
-import com.example.social_reel.dto.ReelCreation;
 import com.example.social_reel.entity.Reel;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -13,7 +12,8 @@ public interface ReelService {
     Reel createReel(
             String userId,
             MultipartFile video,
-            ReelCreation data
+            List<String> data,
+            String caption
     ) throws Exception;
 
     void deleteReel(String reelId, String userId);

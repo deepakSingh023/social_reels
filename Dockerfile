@@ -14,13 +14,13 @@ RUN mvn clean package -DskipTests
 
 # ---------- Runtime stage ----------
 FROM eclipse-temurin:17-jre
+
+RUN apt-get update && apt-get install -y ffmpeg
+
 WORKDIR /app
 
-# Copy built JAR from build stage
 COPY --from=build /app/target/*.jar app.jar
 
-# Render sets PORT automatically
 EXPOSE 8080
 
-# Run the application
 CMD ["java", "-jar", "app.jar"]

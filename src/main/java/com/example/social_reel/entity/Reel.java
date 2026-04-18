@@ -24,6 +24,9 @@ public class Reel {
 
     private String avatar;
 
+
+    private String caption;
+
     private String videoUrl;
 
     private List<String> rawTags;
