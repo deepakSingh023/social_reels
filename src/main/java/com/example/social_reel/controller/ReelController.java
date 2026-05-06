@@ -22,7 +22,7 @@ public class ReelController {
 
     private final PresignedUrlService presignedUrlService;
 
-    @Value("${cloudflare.r2.posts-public-url}")
+    @Value("${cloudflare.r2.public-base-url}")
     private String publicBaseUrl;
 
     @PostMapping(value = "/create",consumes = "multipart/form-data")
