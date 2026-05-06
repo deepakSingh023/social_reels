@@ -94,6 +94,30 @@ public class ReelServiceImpl implements ReelService {
     }
 
     @Override
+    public Reel newCreateApi(String userId, CreateReel data){
+
+        InternalProfile profile = profileClient.getInternalData(token,userId);
+
+
+        Reel reel = Reel.builder()
+                .userId(userId)
+                .caption(data.caption())
+                .videoUrl(data.videoUrl())
+                .username(profile.username())
+                .avatar(profile.avatar())
+                .rawTags(data.tags())
+                .semanticTags(tagResolver.resolve(data.tags()))
+                .likes(0)
+                .comments(0)
+                .createdAt(Instant.now())
+                .build();
+
+        profileClient.updateReelCounter(token,new ReelUpdate(userId,+1));
+
+        return reelRepository.save(reel);
+    }
+
+    @Override
     public void deleteReel(String reelId, String userId) {
 
         Reel reel = reelRepository.findById(reelId)
