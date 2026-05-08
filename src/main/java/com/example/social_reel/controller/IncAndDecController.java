@@ -15,7 +15,7 @@ public class IncAndDecController {
     private final IncAndDecService incAndDecService;
 
 
-    @PutMapping("/like/inc/{reelId}")
+    @PutMapping("/like/inc")
     public ResponseEntity<Void> likeInc(
             @RequestBody IncrementDecDto data
             ){
