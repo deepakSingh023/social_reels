@@ -190,8 +190,8 @@ public class ReelServiceImpl implements ReelService {
                         reel.getSemanticTags(),
                         reel.getCaption(),
                         reel.getViewCount(),
-                        reel.getComments(),
                         reel.getLikes(),
+                        reel.getComments(),
                         reel.getCreatedAt(),
                         likedMap.getOrDefault(reel.getId(),false)
 
@@ -218,8 +218,8 @@ public class ReelServiceImpl implements ReelService {
                 reel.getSemanticTags(),
                 reel.getCaption(),
                 reel.getViewCount(),
-                reel.getComments(),
                 reel.getLikes(),
+                reel.getComments(),
                 reel.getCreatedAt(),
                 likeClient.getIndividualLiked(token,userId,postId)
         );
