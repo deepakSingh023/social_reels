@@ -12,6 +12,7 @@ public record ReelResponse(
         List<String>rawTags,
         long viewCount,
         Instant createdAt,
-        String userId
+        String userId,
+        boolean isLiked
 ) {
 }

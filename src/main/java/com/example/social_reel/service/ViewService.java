@@ -4,7 +4,9 @@ package com.example.social_reel.service;
 import com.example.social_reel.dto.*;
 import com.example.social_reel.entity.Reel;
 import com.example.social_reel.repository.ReelRepository;
+import com.example.social_reel.util.LikeClient;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -21,6 +23,11 @@ public class ViewService {
 
     private final ViewIncrement viewIncrement;
     private final ReelRepository reelRepository;
+
+    private final LikeClient likeClient;
+
+    @Value("${service.secret}")
+    private String token;
 
     public Set<String> viewUpdate(ViewDto data){
 
@@ -83,11 +90,23 @@ public class ViewService {
 
         Collections.shuffle(feed);
 
+
+
         List<Reel> uniqueFeed =
                 feed.stream()
                         .distinct()
                         .limit(limit)
                         .toList();
+
+
+        List<String> reelIds = uniqueFeed.stream()
+                .map(Reel::getId)
+                .toList();
+
+
+        Map<String , Boolean> isLiked = likeClient.getLikedStatus(token, interest.userId(),reelIds );
+
+
 
         List<ReelResponse> response =
                 uniqueFeed.stream()
@@ -99,7 +118,8 @@ public class ViewService {
                                 r.getRawTags(),
                                 r.getViewCount(),
                                 r.getCreatedAt(),
-                                r.getUserId()
+                                r.getUserId(),
+                                isLiked.getOrDefault(r.getId(),false)
                         ))
                         .toList();
 
