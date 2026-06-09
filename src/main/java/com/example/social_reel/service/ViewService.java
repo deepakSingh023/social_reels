@@ -3,9 +3,13 @@ package com.example.social_reel.service;
 
 import com.example.social_reel.dto.*;
 import com.example.social_reel.entity.Reel;
+import com.example.social_reel.enums.InterestType;
+import com.example.social_reel.exceptions.ReelNotFound;
 import com.example.social_reel.repository.ReelRepository;
 import com.example.social_reel.util.LikeClient;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
@@ -29,14 +33,28 @@ public class ViewService {
     @Value("${service.secret}")
     private String token;
 
+    private final static Logger log = LoggerFactory.getLogger(ViewService.class);
+
     public Set<String> viewUpdate(ViewDto data){
 
 
-        Reel reel = viewIncrement.incrementView(data.reelId());
+        Reel reel;
+        if(data.type()==InterestType.LIKE){
+            reel = reelRepository.findById(data.reelId())
+                    .orElseThrow( ()-> new ReelNotFound("reel not found"));
+
+        }else{
+             reel = viewIncrement.incrementView(data.reelId());
+        }
+
+
 
         if (reel == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Reel not found");
         }
+
+
+
 
         double popularity = calculatePopularity(reel);
 
@@ -104,7 +122,28 @@ public class ViewService {
                 .toList();
 
 
-        Map<String , Boolean> isLiked = likeClient.getLikedStatus(token, interest.userId(),reelIds );
+
+
+        Map<String, Boolean> isLiked = new HashMap<>();
+
+        try {
+            isLiked = likeClient.getLikedStatus(
+                    token,
+                    interest.userId(),
+                    reelIds
+            );
+        } catch (Exception e) {
+
+            log.warn("Like service unavailable", e);
+
+            for (String id : reelIds) {
+                isLiked.put(id, false);
+            }
+        }
+
+        final Map<String, Boolean> finalIsLiked = isLiked;
+
+
 
 
 
@@ -119,7 +158,7 @@ public class ViewService {
                                 r.getViewCount(),
                                 r.getCreatedAt(),
                                 r.getUserId(),
-                                isLiked.getOrDefault(r.getId(),false)
+                                finalIsLiked.getOrDefault(r.getId(),false)
                         ))
                         .toList();
 
