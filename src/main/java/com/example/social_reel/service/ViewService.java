@@ -193,9 +193,14 @@ public class ViewService {
     }
 
     private double calculatePopularity(Reel reel) {
+
         long hours =
                 Duration.between(reel.getCreatedAt(), Instant.now()).toHours() + 1;
 
-        return (reel.getViewCount()) / Math.pow(hours, 1.5);
+        double engagementScore =
+                reel.getViewCount()
+                        + (reel.getLikes() * 5);
+
+        return engagementScore / Math.pow(hours, 1.5);
     }
 }
