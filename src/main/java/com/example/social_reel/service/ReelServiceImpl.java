@@ -8,6 +8,8 @@ import com.example.social_reel.util.LikeClient;
 import com.example.social_reel.util.ProfileClient;
 import com.example.social_reel.util.VideoCompressor;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -33,6 +35,8 @@ public class ReelServiceImpl implements ReelService {
     private final SemanticTagResolver tagResolver;
 
     private final ProfileClient profileClient;
+
+    private static final Logger log = LoggerFactory.getLogger(ReelServiceImpl.class);
 
     private final LikeClient likeClient;
 
@@ -154,7 +158,7 @@ public class ReelServiceImpl implements ReelService {
         }else{
             Instant instantCursor = Instant.parse(cursor);
 
-            reels = reelRepository.findByUserIdAndCreatedAtLessThanOrderByCreatedAtDesc(userId,instantCursor,Pageable.ofSize(10));
+            reels = reelRepository.findByUserIdAndCreatedAtLessThanOrderByCreatedAtDesc(ownerId,instantCursor,Pageable.ofSize(10));
         }
 
         boolean isOwner = userId != null && userId.equals(ownerId);
@@ -171,13 +175,21 @@ public class ReelServiceImpl implements ReelService {
                 .toList();
 
 
-        Map<String, Boolean> likedMap;
+        Map<String, Boolean> tempLikedMap = Collections.emptyMap();
 
         if (userId != null && !reelIds.isEmpty()) {
-            likedMap = likeClient.getLikedStatus(token , userId, reelIds);
-        } else {
-            likedMap = Collections.emptyMap();
+            try {
+                tempLikedMap = likeClient.getLikedStatus(
+                        token,
+                        userId,
+                        reelIds
+                );
+            } catch (Exception e) {
+                System.out.println("Likes service unavailable");
+            }
         }
+
+        final Map<String, Boolean> likedMap = tempLikedMap;
 
 
         List<PersonalReelsResponse> res = reels.stream()
@@ -209,6 +221,19 @@ public class ReelServiceImpl implements ReelService {
                 .orElseThrow(()->new ReelNotFound("this reel does not exit"));
 
 
+        boolean isLiked = false;
+
+        try {
+            isLiked = likeClient.getIndividualLiked(
+                    token,
+                    userId,
+                    postId
+            );
+        } catch (Exception e) {
+            log.error("likes service down failed to fetch likes", e);
+        }
+
+
         PersonalReelsResponse res = new PersonalReelsResponse(
                 reel.getId(),
                 reel.getUsername(),
@@ -221,7 +246,7 @@ public class ReelServiceImpl implements ReelService {
                 reel.getLikes(),
                 reel.getComments(),
                 reel.getCreatedAt(),
-                likeClient.getIndividualLiked(token,userId,postId)
+                isLiked
         );
 
         boolean isOwner = userId !=null && userId.equals(reel.getUserId());
