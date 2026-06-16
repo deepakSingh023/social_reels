@@ -311,7 +311,7 @@ Spring Boot Actuator exposes:
 
 ## Tech Stack
 
-- Java 21
+- Java 17
 - Spring Boot
 - Spring Security
 - MongoDB
